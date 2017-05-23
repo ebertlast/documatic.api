@@ -36,3 +36,7 @@ DELIMITER ;
 
 
 SELECT rutaid FROM rutasperfil WHERE rutaid='/home' and perfilid=(SELECT perfilid FROM usuarios WHERE usuario='ezerpa' limit 1)
+
+SELECT CASE WHEN count(archivoid)<0 then 's' else 'n' end FROM gd_aprobacion WHERE archivoid='MGH001' AND gd_aprobacion.aprobado<1
+
+SELECT `revisionid`, `revisado`, `archivoid`, `gd_revision`.`usuario`, `fecha`, concat(`usuarios`.`nombres`,' ',`usuarios`.`apellidos`) as usuarionombre FROM `gd_revision` LEFT JOIN `usuarios` ON `usuarios`.`usuario`=`gd_revision`.`usuario` WHERE `revisionid`='PGD001'

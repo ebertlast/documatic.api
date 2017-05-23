@@ -10,11 +10,15 @@ function getConnection($tipoConexion="mysql"){
         $dbhost="localhost";
         $dbuser="root";
         $dbpass="";
-        $dbname="webapp";
+        $dbname="dosimatic";
         if($produccion){
             $dbname="ixvenezu_pharmashop";
             $dbuser="ixvenezu_root";
             $dbpass="enclave.21978";
+
+            $dbname="dosisun1_dosimatic";
+            $dbuser="dosisun1_root";
+            $dbpass="123.qwerty";
         }
         $dbh = new PDO("mysql:host=$dbhost;dbname=$dbname",$dbuser,$dbpass);
         return $dbh;

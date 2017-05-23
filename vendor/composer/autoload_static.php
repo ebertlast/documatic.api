@@ -11,6 +11,11 @@ class ComposerStaticInit4b29958f7b38f3b0b2ce7cda685103de
     );
 
     public static $prefixLengthsPsr4 = array (
+        'Z' => 
+        array (
+            'Zend\\Stdlib\\' => 12,
+            'Zend\\Memory\\' => 12,
+        ),
         'S' => 
         array (
             'Slim\\' => 5,
@@ -32,6 +37,14 @@ class ComposerStaticInit4b29958f7b38f3b0b2ce7cda685103de
     );
 
     public static $prefixDirsPsr4 = array (
+        'Zend\\Stdlib\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/zendframework/zend-stdlib/src',
+        ),
+        'Zend\\Memory\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/zendframework/zend-memory/src',
+        ),
         'Slim\\' => 
         array (
             0 => __DIR__ . '/..' . '/slim/slim/Slim',
@@ -59,6 +72,13 @@ class ComposerStaticInit4b29958f7b38f3b0b2ce7cda685103de
     );
 
     public static $prefixesPsr0 = array (
+        'Z' => 
+        array (
+            'ZendPdf\\' => 
+            array (
+                0 => __DIR__ . '/..' . '/zendframework/zendpdf/library',
+            ),
+        ),
         'P' => 
         array (
             'Pimple' => 
@@ -70,12 +90,20 @@ class ComposerStaticInit4b29958f7b38f3b0b2ce7cda685103de
 
     public static $classMap = array (
         'EasyPeasyICS' => __DIR__ . '/..' . '/phpmailer/phpmailer/extras/EasyPeasyICS.php',
+        'FPDF' => __DIR__ . '/..' . '/setasign/fpdf/fpdf.php',
+        'FPDF_TPL' => __DIR__ . '/..' . '/setasign/fpdi/fpdf_tpl.php',
+        'FPDI' => __DIR__ . '/..' . '/setasign/fpdi/fpdi.php',
+        'FilterASCII85' => __DIR__ . '/..' . '/setasign/fpdi/filters/FilterASCII85.php',
+        'FilterASCIIHexDecode' => __DIR__ . '/..' . '/setasign/fpdi/filters/FilterASCIIHexDecode.php',
+        'FilterLZW' => __DIR__ . '/..' . '/setasign/fpdi/filters/FilterLZW.php',
         'PHPMailer' => __DIR__ . '/..' . '/phpmailer/phpmailer/class.phpmailer.php',
         'PHPMailerOAuth' => __DIR__ . '/..' . '/phpmailer/phpmailer/class.phpmaileroauth.php',
         'PHPMailerOAuthGoogle' => __DIR__ . '/..' . '/phpmailer/phpmailer/class.phpmaileroauthgoogle.php',
         'POP3' => __DIR__ . '/..' . '/phpmailer/phpmailer/class.pop3.php',
         'SMTP' => __DIR__ . '/..' . '/phpmailer/phpmailer/class.smtp.php',
+        'fpdi_pdf_parser' => __DIR__ . '/..' . '/setasign/fpdi/fpdi_pdf_parser.php',
         'ntlm_sasl_client_class' => __DIR__ . '/..' . '/phpmailer/phpmailer/extras/ntlm_sasl_client.php',
+        'pdf_context' => __DIR__ . '/..' . '/setasign/fpdi/pdf_context.php',
         'phpmailerException' => __DIR__ . '/..' . '/phpmailer/phpmailer/class.phpmailer.php',
     );
 

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 21-05-2017 a las 03:42:41
+-- Tiempo de generación: 22-05-2017 a las 12:03:21
 -- Versión del servidor: 5.7.14
 -- Versión de PHP: 7.0.10
 
@@ -17,7 +17,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `webapp`
+-- Base de datos: `dosimatic`
 --
 
 DELIMITER $$
@@ -51,6 +51,29 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `gd_aprobacion`
+--
+
+CREATE TABLE `gd_aprobacion` (
+  `aprobacionid` int(11) NOT NULL,
+  `aprobado` tinyint(1) NOT NULL DEFAULT '1',
+  `archivoid` varchar(20) NOT NULL,
+  `usuario` varchar(256) NOT NULL,
+  `fecha` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+--
+-- Volcado de datos para la tabla `gd_aprobacion`
+--
+
+INSERT INTO `gd_aprobacion` (`aprobacionid`, `aprobado`, `archivoid`, `usuario`, `fecha`) VALUES
+(11, 1, 'PGD001', 'ezerpa', '2017-05-21 21:06:05'),
+(15, 0, 'MGD001', 'ezerpa', '2017-05-22 00:02:03'),
+(14, 1, 'MGH001', 'ezerpa', '2017-05-21 23:38:32');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `gd_archivo`
 --
 
@@ -71,7 +94,9 @@ CREATE TABLE `gd_archivo` (
 --
 
 INSERT INTO `gd_archivo` (`archivoid`, `nombre`, `gestionid`, `convencionid`, `archivoidaux`, `denominacion`, `observaciones`, `usuario`, `fecha`) VALUES
-('MGD001', '20170521_000942_PGD-01-F2 LISTADO MAESTRO DOCUMENTOS UTDUC.xlsx', 'GD', 'M', '', 'GLOSARIO GENERAL UDTFUC', '', 'ezerpa', '2017-05-20 20:36:58');
+('MGD001', '20170521_000942_PGD-01-F2 LISTADO MAESTRO DOCUMENTOS UTDUC.xlsx', 'GD', 'M', '', 'GLOSARIO GENERAL UDTFUC', '', 'ezerpa', '2017-05-20 20:36:58'),
+('PGD001', '20170521_141728_Rif Actualizado QZ.pdf', 'GD', 'P', '', 'ELABORACIÃ³N DE DOCUMENTOS', '', 'ezerpa', '2017-05-21 10:17:31'),
+('MGH001', '20170522_033711_Presupuesto.pdf', 'GH', 'M', '', 'PRUEBAS DE DESARROLLO', '', 'ezerpa', '2017-05-21 23:37:16');
 
 -- --------------------------------------------------------
 
@@ -110,12 +135,25 @@ CREATE TABLE `gd_gestion` (
 --
 
 INSERT INTO `gd_gestion` (`gestionid`, `denominacion`) VALUES
+('GA', 'GESTION DE ANALISIS, MEDICION Y MEJORA'),
+('GP', 'GESTION DE PRODUCCION'),
+('GH', 'GESTION DEL RECURSO HUMANO'),
 ('GD', 'GESTION DOCUMENTAL'),
 ('GF', 'GESTION DE RECURSO FISICO'),
-('GH', 'GESTION DEL RECURSO HUMANO'),
-('GP', 'GESTION DE PRODUCCION'),
-('GA', 'GESTION DE ANALISIS, MEDICION Y MEJORA'),
 ('GC', 'GESTION DE CALIDAD');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `gd_vigencia`
+--
+
+CREATE TABLE `gd_vigencia` (
+  `vigenciaid` int(11) NOT NULL,
+  `archivoid` varchar(20) NOT NULL,
+  `fdesde` datetime NOT NULL,
+  `fhasta` datetime NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -150,8 +188,9 @@ INSERT INTO `menu` (`menuid`, `label`, `iconfa`, `orden`, `activo`, `ruta`, `res
 ('usuarios', 'Usuarios', '', 2, b'1', 'usuarios', '', 'info', 'seguridad'),
 ('perfiles', 'Perfiles', '', 1, b'1', 'perfiles', '', 'info', 'seguridad'),
 ('inicio', 'Escritorio', 'fa-th-large', 0, b'1', 'home', '', '', ''),
-('menues', 'Menues', '', 3, b'1', 'menues', '', 'info', 'seguridad'),
 ('gestiondocumental', 'GestiÃ³n Documental', 'fa-edit', 1, b'1', '', '', '', ''),
+('menues', 'Menues', '', 3, b'1', 'menues', '', 'info', 'seguridad'),
+('app', 'Aplicacion Web', '', 1, b'0', '', '', '', ''),
 ('archivos', 'Archivos', '', 1, b'1', 'archivos', '', '', 'gestiondocumental');
 
 -- --------------------------------------------------------
@@ -192,7 +231,10 @@ CREATE TABLE `perfiles` (
 INSERT INTO `perfiles` (`perfilid`, `denominacion`, `activo`, `fechacreado`) VALUES
 ('admin', 'Administrador', b'1', '2017-04-23 10:31:11'),
 ('invitado', 'Invitado', b'1', '2017-04-23 10:32:25'),
-('inactivos', 'Inactivos', b'0', '2017-04-23 10:32:25');
+('inactivos', 'Inactivos', b'0', '2017-04-23 10:32:25'),
+('DGAC', 'Director de Gestion y Aseguramiento de la Calidad', b'1', '2017-05-22 07:52:12'),
+('DT', 'Director Tecnico', b'1', '2017-05-22 07:52:12'),
+('Gerente', 'Gerente', b'1', '2017-05-22 07:52:26');
 
 -- --------------------------------------------------------
 
@@ -257,8 +299,8 @@ INSERT INTO `rutasperfil` (`rutaid`, `perfilid`) VALUES
 ('salir', 'invitado'),
 ('ingresar', 'invitado'),
 ('home', 'invitado'),
-('archivos', 'admin'),
-('undefined', 'admin');
+('archivos', 'invitado'),
+('archivos', 'admin');
 
 -- --------------------------------------------------------
 
@@ -277,40 +319,35 @@ CREATE TABLE `usuarios` (
   `nombres` varchar(256) DEFAULT NULL,
   `apellidos` varchar(256) DEFAULT NULL,
   `avatar` varchar(256) DEFAULT NULL,
-  `perfilid` varchar(20) DEFAULT NULL
+  `perfilid` varchar(20) DEFAULT NULL,
+  `firma` varchar(1000) DEFAULT ''
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
 --
 -- Volcado de datos para la tabla `usuarios`
 --
 
-INSERT INTO `usuarios` (`usuario`, `clave`, `email`, `masculino`, `fechanacimiento`, `activo`, `fecharegistro`, `nombres`, `apellidos`, `avatar`, `perfilid`) VALUES
-('ezerpa', '1e80e757838a336a275c2c6c79473e2b', 'ebertunerg@gmail.com', b'1', '1987-09-16 00:00:00', b'1', '2017-04-21 15:41:54', 'Ebert Manuel', 'Zerpa Figueroa', NULL, 'admin'),
-('invitado', '81dc9bdb52d04dc20036dbd8313ed055', 'ebert15@hotmail.com', b'1', '1988-02-16 00:00:00', b'1', '2017-04-28 14:05:55', 'Invitado', '.', '', 'invitado'),
-('pruebas2', '1e80e757838a336a275c2c6c79473e2b', 'pruebas2@pruebas.com', b'1', '1987-11-16 00:00:00', b'0', '2017-04-28 14:07:52', 'Pablo', 'Medina', '', ''),
-('test', '0cc175b9c0f1b6a831c399e269772661', 'test@gmail.com', b'0', '1988-01-19 00:00:00', b'0', '2017-05-07 07:18:46', 'MarÃ­a', 'Medina', '', 'invitado');
+INSERT INTO `usuarios` (`usuario`, `clave`, `email`, `masculino`, `fechanacimiento`, `activo`, `fecharegistro`, `nombres`, `apellidos`, `avatar`, `perfilid`, `firma`) VALUES
+('ezerpa', '1e80e757838a336a275c2c6c79473e2b', 'ebertunerg@gmail.com', b'1', '1987-09-16 00:00:00', b'1', '2017-04-21 15:41:54', 'Ebert Manuel', 'Zerpa Figueroa', 'assets/avatars/alfabeto/E.png', 'admin', 'uploads/firmas/ezerpa.png'),
+('invitado', '81dc9bdb52d04dc20036dbd8313ed055', 'ebert15@hotmail.com', b'1', '1988-02-16 00:00:00', b'1', '2017-04-28 14:05:55', 'Invitado', '.', '', 'invitado', ''),
+('pruebas2', '1e80e757838a336a275c2c6c79473e2b', 'pruebas2@pruebas.com', b'1', '1987-11-16 00:00:00', b'0', '2017-04-28 14:07:52', 'Pablo', 'Medina', '', '', ''),
+('test', '0cc175b9c0f1b6a831c399e269772661', 'test@gmail.com', b'0', '1988-01-19 00:00:00', b'0', '2017-05-07 07:18:46', 'MarÃ­a', 'Medina', '', 'invitado', '');
 
 --
 -- Índices para tablas volcadas
 --
 
 --
--- Indices de la tabla `gd_archivo`
+-- Indices de la tabla `gd_aprobacion`
 --
-ALTER TABLE `gd_archivo`
-  ADD PRIMARY KEY (`archivoid`);
+ALTER TABLE `gd_aprobacion`
+  ADD PRIMARY KEY (`aprobacionid`);
 
 --
--- Indices de la tabla `gd_convencion`
+-- Indices de la tabla `gd_vigencia`
 --
-ALTER TABLE `gd_convencion`
-  ADD PRIMARY KEY (`convencionid`);
-
---
--- Indices de la tabla `gd_gestion`
---
-ALTER TABLE `gd_gestion`
-  ADD PRIMARY KEY (`gestionid`);
+ALTER TABLE `gd_vigencia`
+  ADD PRIMARY KEY (`vigenciaid`);
 
 --
 -- Indices de la tabla `menu`
@@ -344,6 +381,20 @@ ALTER TABLE `usuarios`
   ADD UNIQUE KEY `email` (`email`),
   ADD KEY `FK_perfilid` (`perfilid`);
 
+--
+-- AUTO_INCREMENT de las tablas volcadas
+--
+
+--
+-- AUTO_INCREMENT de la tabla `gd_aprobacion`
+--
+ALTER TABLE `gd_aprobacion`
+  MODIFY `aprobacionid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+--
+-- AUTO_INCREMENT de la tabla `gd_vigencia`
+--
+ALTER TABLE `gd_vigencia`
+  MODIFY `vigenciaid` int(11) NOT NULL AUTO_INCREMENT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

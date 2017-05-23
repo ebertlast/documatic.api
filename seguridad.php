@@ -4,6 +4,7 @@ require 'vendor/autoload.php';
 
 require 'tokens.php';
 require 'conexdb.php';
+require 'autenticarDocs.php';
 /*Intento de capturar los errores de SQL o PHP*/
 /*
 $container = $app->getContainer();
@@ -62,9 +63,72 @@ $app->get('/', function ($request, $response, $args = [])  use($db, $app) {
     return $response->withStatus(400)->write('Bad Request');
 });
 
+
 /* U S U A R I O S */
 //http://localhost:8082/Angular/unidosis/api/seguridad.php/prueba
 $app->get("/prueba", function($request, $response, $args) use($db, $app) {
+	//require_once('fpdf/fpdf.php');
+	//require_once('fpdi/fpdi.php');
+	//$pdf1 = new Zend_Pdf();
+	/*
+	$pdf = new FPDI();
+	$pdf->AddPage(); 
+	$pdf->setSourceFile('uploads/Octubre - Cliente TOMAS ZERPA.pdf'); 
+	$tplIdx = $pdf->importPage(1); 
+	//$pdf->Output('uploads/gift_coupon_generated.pdf', 'D');
+	$pdf->Output('uploads/prueba.pdf','F');
+	*/
+	/*
+	$pdf = new FPDF();
+	$file="uploads/Octubre - Cliente TOMAS ZERPA.pdf";
+	$pdf->AddPage('uploads/gift_coupon_generated.pdf');
+	//$pdf->setSourceFile('uploads/gift_coupon_generated.pdf'); 
+	$pdf->SetFont('Arial','B',16);
+	$pdf->Cell(80,10,'Ebert!');
+	$pdf->Output('uploads/gift_coupon_generated.pdf','F');
+	*/
+	
+	
+	
+	/*
+	// initiate FPDI
+	$pdf = new FPDI();
+	// add a page
+	$pdf->AddPage();
+	// set the source file
+	$pdf->setSourceFile("uploads/Octubre - Cliente TOMAS ZERPA.pdf");
+	// import page 1
+	$tplIdx = $pdf->importPage(1);
+	// use the imported page and place it at point 10,10 with a width of 100 mm
+	$pdf->useTemplate($tplIdx, 10, 10, 100);
+
+	// now write some text above the imported page
+	$pdf->SetFont('Helvetica');
+	$pdf->SetTextColor(255, 0, 0);
+	$pdf->SetXY(30, 30);
+	$pdf->Write(0, 'This is just a simple text');
+	// Insert a logo in the top-left corner at 300 dpi
+	$pdf->Image('uploads/firmas/jvalera.png',10,10,-300);
+	// Insert a dynamic image from a URL
+	//$pdf->Image('http://chart.googleapis.com/chart?cht=p3&chd=t:60,40&chs=250x100&chl=Hello|World',60,30,90,0,'PNG');
+	$pdf->Output('uploads/gift_coupon_generated.pdf','F');
+	*/
+	
+    $firmas = array(
+        0 => array('razonsocial' => 'Ebert Manuel Zerpa Figueroa','cargo'=>'Administrador','firma'=>'uploads/firmas/jvalera.png')
+        ,1 => array('razonsocial' => 'Ebert Zerpa','cargo'=>'Tecnico','firma'=>'uploads/firmas/jvalera.png')
+        ,2 => array('razonsocial' => 'Jose Pinero','cargo'=>'Supervisor','firma'=>'uploads/firmas/jvalera.png')
+        ,3 => array('razonsocial' => 'Virinia Rojas','cargo'=>'Quimico','firma'=>'uploads/firmas/vrojas.png')
+       // ,4 => array('razonsocial' => 'Armando Martinez','cargo'=>'Cantante','firma'=>'uploads/firmas/jvalera.png')
+        );
+
+    $firmas = array();
+	$pdfOrigen="uploads/prueba2.pdf";
+    $pdfDestino="uploads/prueba.pdf";
+
+    firmar($firmas,$pdfOrigen,$pdfDestino,TRUE);
+    
+    
     $dataJson = array();
     $dataJson['usuario']='ezerpa';
     $dataJson['clave']='enclave';
@@ -132,11 +196,14 @@ $app->post("/autenticar", function($request, $response, $args) use($db, $app) {
      
     $usuario = $data["usuario"];
     $clave = $data["clave"];
+     
+    // $usuario = "ezerpa";
+    // $clave = "enclave";
     // $usuario=$request->getParam('usuario');
     
     $sql="SELECT `usuario`,`email`,`masculino`,`fechanacimiento`,`activo`,`fecharegistro`,`nombres`,`apellidos`,`avatar` FROM usuarios where (usuario = '{$usuario}' or email = '{$usuario}') AND MD5('{$clave}')=clave;";
-    $sql="SELECT `usuario`, `email`, `masculino`, `fechanacimiento`, `usuarios`.`activo`, `fecharegistro`, `nombres`, `apellidos`, `avatar`, `usuarios`.`perfilid`,`perfiles`.`denominacion` as 'perfil' FROM `usuarios` LEFT JOIN `perfiles` ON `usuarios`.`perfilid`=`perfiles`.`perfilid` WHERE (`usuarios`.`usuario` = '{$usuario}' or `usuarios`.`email` = '{$usuario}') AND MD5('{$clave}')=`usuarios`.`clave`;";
-    
+    $sql="SELECT `usuario`, `email`, `masculino`, `fechanacimiento`, `usuarios`.`activo`, `fecharegistro`, `nombres`, `apellidos`, `avatar`, `usuarios`.`perfilid`,`perfiles`.`denominacion` as 'perfil',`usuarios`.`firma` FROM `usuarios` LEFT JOIN `perfiles` ON `usuarios`.`perfilid`=`perfiles`.`perfilid` WHERE (`usuarios`.`usuario` = '{$usuario}' or `usuarios`.`email` = '{$usuario}') AND MD5('{$clave}')=`usuarios`.`clave`;";
+    // var_dump($sql);
     try {
         $query = $db->query($sql);
     } catch(PDOException $e) {
@@ -659,7 +726,7 @@ $app->get("/usuarios", function($request, $response, $args) use($db, $app) {
     }
 
 
-    $sql="SELECT `usuario`, `email`, `masculino`, `fechanacimiento`, `usuarios`.`activo`, `fecharegistro`, `nombres`, `apellidos`, `avatar`, `usuarios`.`perfilid`,`perfiles`.`denominacion` as 'perfil' FROM `usuarios` LEFT JOIN `perfiles` ON `usuarios`.`perfilid`=`perfiles`.`perfilid` WHERE 1;";
+    $sql="SELECT `usuario`, `email`, `masculino`, `fechanacimiento`, `usuarios`.`activo`, `fecharegistro`, `nombres`, `apellidos`, `avatar`, `usuarios`.`perfilid`,`perfiles`.`denominacion` as 'perfil',`usuarios`.`firma` FROM `usuarios` LEFT JOIN `perfiles` ON `usuarios`.`perfilid`=`perfiles`.`perfilid` WHERE 1;";
     
     try {
         $query = $db->query($sql);
@@ -719,7 +786,7 @@ $app->get("/usuario/{usuario}", function($request, $response, $args) use($db, $a
     }
 
     
-    $sql="SELECT `usuario`, `email`, `masculino`, `fechanacimiento`, `usuarios`.`activo`, `fecharegistro`, `nombres`, `apellidos`, `avatar`, `usuarios`.`perfilid`,`perfiles`.`denominacion` as 'perfil' FROM `usuarios` LEFT JOIN `perfiles` ON `usuarios`.`perfilid`=`perfiles`.`perfilid` WHERE '{$args['usuario']}' IN (`usuarios`.`usuario`,`usuarios`.`email`);";
+    $sql="SELECT `usuario`, `email`, `masculino`, `fechanacimiento`, `usuarios`.`activo`, `fecharegistro`, `nombres`, `apellidos`, `avatar`, `usuarios`.`perfilid`,`perfiles`.`denominacion` as 'perfil', `usuarios`.`firma` FROM `usuarios` LEFT JOIN `perfiles` ON `usuarios`.`perfilid`=`perfiles`.`perfilid` WHERE '{$args['usuario']}' IN (`usuarios`.`usuario`,`usuarios`.`email`);";
     try {
         $query = $db->query($sql);
     } catch(PDOException $e) {
@@ -742,6 +809,61 @@ $app->get("/usuario/{usuario}", function($request, $response, $args) use($db, $a
 
 });
 
+$app->post('/firma-upload', function ($request, $response, $args) {
+    $files = $request->getUploadedFiles();
+    if (empty($files['files'])) {
+        return $response
+            ->withStatus(412)
+            ->withHeader('Content-type', 'application/json')
+            // ->withJson(array('error' => (empty($files['files']))))
+            ->withJson(array('error' => 'Ningún fichero encontrado en la solicitud'))
+        ; 
+    }
+    // $allPostPutVars = $request->getParsedBody();
+    // foreach (json_decode($allPostPutVars) as $key => $value) {
+    //     $uploadFileName.=$value;
+    // }
+
+    $newfile = $files['files'];
+    //$uploadFileName=is_array($allPostPutVars);//date("Ymd_His_");
+    //var_dump($body);   
+    $usuario=($request->getParsedBody()['usuario']);
+    $uploadFileName=$usuario;   
+    $fn=$newfile->getClientFilename();
+    $uploadFileName.=substr($fn,strrpos($fn, '.'),strlen($fn));
+    if ($newfile->getError() === UPLOAD_ERR_OK) {
+        // $uploadFileName .= $newfile->getClientFilename();
+        $newfile->moveTo("./uploads/firmas/$uploadFileName");        
+
+    }else{
+        return $response
+            ->withStatus(500)
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => "Documento no ha podido ser subido a nuestro servidor"))
+        ; 
+    }  
+
+    // $url="./uploads/firmas/".$uploadFileName;
+    // $sql="UPDATE `usuarios` SET `firma`='{$uploadFileName}' WHERE `usuarios`.`usuario`='{$usuario}'";
+    // try {
+        // $update = $db->query($sql);
+    // } catch(PDOException $e) {
+    //     return $response
+    //         ->withHeader('Content-type', 'application/json')
+    //         ->withJson(array('error' => $e->getMessage()))
+    //         ; 
+    // }
+
+    $data = array('filename' => $uploadFileName);
+    return $response
+            // ->withStatus(500)
+            ->withHeader('Content-type', 'application/json')
+            // ->withJson(array('error' => (empty($files['files']))))
+            ->withJson(array('status' => 'success','data'=>$data))
+        ; 
+    
+   
+});
 /**
 * Registrar nuevos usuarios
 */
@@ -872,7 +994,7 @@ $app->post("/usuario/{usuarioOLD}", function($request, $response, $args) use($db
     $modelo["nombres"]=ucwords($modelo["nombres"]);
     $modelo["apellidos"]=ucwords($modelo["apellidos"]);
     $fechanacimiento = date("Y-m-d", strtotime($modelo["fechanacimiento"]));
-    $sql="UPDATE `usuarios` SET `usuario`='{$modelo['usuario']}',`clave`=MD5('{$modelo['clave']}'),`email`='{$modelo['email']}',`masculino`={$masculino},`fechanacimiento`='{$fechanacimiento}',`activo`={$activo},`nombres`='{$modelo['nombres']}',`apellidos`='{$modelo['apellidos']}',`avatar`='{$modelo['avatar']}',`perfilid`='{$modelo['perfilid']}' WHERE `usuarios`.`usuario`='{$usuarioOLD}'";
+    $sql="UPDATE `usuarios` SET `usuario`='{$modelo['usuario']}',`clave`=MD5('{$modelo['clave']}'),`email`='{$modelo['email']}',`masculino`={$masculino},`fechanacimiento`='{$fechanacimiento}',`activo`={$activo},`nombres`='{$modelo['nombres']}',`apellidos`='{$modelo['apellidos']}',`avatar`='{$modelo['avatar']}',`perfilid`='{$modelo['perfilid']}',`firma`='{$modelo['firma']}' WHERE `usuarios`.`usuario`='{$usuarioOLD}'";
     // return $response
     //         ->withHeader('Content-type', 'application/json')
     //         ->withJson(array('error' => json_encode($sql)))
@@ -897,6 +1019,74 @@ $app->post("/usuario/{usuarioOLD}", function($request, $response, $args) use($db
         return $response
             ->withHeader('Content-type', 'application/json')
             ->withJson(array('error' => 'El perfil no ha podido ser actualizado, vuelve a intentarlo'))
+            ; 
+	}
+    
+    // $token = newToken($dataUser);
+	// $result = array("status" => "success", "data" => $data[0], "token"=>$token);
+	// echo json_encode($result);
+    return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array("status" => "success", "data" => $data[0], "token"=>newToken($dataUser)))
+            ;
+    
+});
+//http://localhost:8082/Angular/unidosis/api/seguridad.php/usuario/ezerpa
+$app->post("/setfirma", function($request, $response, $args) use($db, $app) { 
+    if (!$request->hasHeader('Authorization')) {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => 'Token no encontrado en la solicitud.'))
+            ;
+    }
+    $jwt=explode(" ",$request->getHeaderLine('Authorization'))[1];
+    
+    $dataUser=getToken($jwt);
+    if(array_key_exists('error', $dataUser)){
+       return $response
+            ->withStatus(401)
+            ->withHeader('Content-type', 'application/json')
+            ->withJson($dataUser)
+            ;
+    }
+    
+    $usuario=$dataUser->usuario;
+    $clave=$dataUser->clave;
+   
+    if(!$usuario){
+        return $response
+            ->withStatus(401)
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => 'No hemos podido identificarte, intenta volver a iniciar sesión'))
+            ;
+    }else{
+
+    }
+
+    $json = $request->getParsedBody();
+    $modelo = json_decode($json['json'],true)["usuario"];
+     
+    $sql="UPDATE `usuarios` SET `firma`='{$modelo['firma']}' WHERE `usuarios`.`usuario`='{$modelo['usuario']}'";
+
+
+    try {
+        $update = $db->query($sql);
+    } catch(PDOException $e) {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => $e->getMessage()))
+            ; 
+    }
+
+	if ($update) {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('success' => 'Firma actualizada'))
+            ;
+	} else {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => 'La firma no ha podido ser actualizada, vuelve a intentarlo'))
             ; 
 	}
     
