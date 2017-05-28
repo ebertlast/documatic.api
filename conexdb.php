@@ -5,7 +5,7 @@ $app = new \Slim\App();
 function getConnection($tipoConexion="mysql"){
     //$tipoConexion="mssql";
     //$tipoConexion="mysql";
-    $produccion=false;
+    $produccion=true;
     if($tipoConexion=="mysql"){
         $dbhost="localhost";
         $dbuser="root";
@@ -29,6 +29,7 @@ function getConnection($tipoConexion="mysql"){
         $dbname="K_MLF_2";
         $dbh = new PDO("odbc:Driver={SQL Server Native Client 11.0};Server=$dbhost;Database=$dbname; Uid=$dbuser;Pwd=$dbpass;");
         $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $dbh -> exec("SET NAMES 'utf8';");
         return $dbh;
     }
 }

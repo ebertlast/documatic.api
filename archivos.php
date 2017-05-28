@@ -98,7 +98,7 @@ $app->get("/gestion", function($request, $response, $args) use($db, $app) {
     }
     
     $tabla=PREFIJO."gestion";
-    $sql="SELECT `gestionid`, convert(`denominacion` USING ascii) as `denominacion` FROM `$tabla` WHERE 1;";
+    $sql="SELECT `gestionid`, `denominacion` FROM `$tabla` WHERE 1;";
     
     
     try {
@@ -379,7 +379,7 @@ $app->get("/convencion/[{convencionid}]", function($request, $response, $args) u
     $where="1";
     if(isset($args['convencionid']))
         $where="`convencionid`='".$args["convencionid"]."'"; 
-    $sql="SELECT `convencionid`, convert(`denominacion` USING ascii) as `denominacion` FROM `$tabla` WHERE {$where};";
+    $sql="SELECT `convencionid`, `denominacion` FROM `$tabla` WHERE {$where};";
     
     
     try {

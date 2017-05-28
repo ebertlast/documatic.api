@@ -1804,6 +1804,7 @@ $app->get("/rutas", function($request, $response, $args) use($db, $app) {
     }
 
     $sql="SELECT `rutaid`, `ruta`, convert(`descripcion` USING ascii) as descripcion FROM `rutas` ";
+    $sql="SELECT `rutaid`, `ruta`, `descripcion` descripcion FROM `rutas` ";
     
     
     try {
@@ -1861,6 +1862,7 @@ $app->get("/rutasenperfil/{perfilid}", function($request, $response, $args) use(
     }
 
     $sql="SELECT `rutaid`, `ruta`, convert(`descripcion` USING ascii) as descripcion FROM `rutas` WHERE `rutas`.`rutaid` IN (SELECT `rutasperfil`.`rutaid` FROM `rutasperfil` WHERE `rutasperfil`.`perfilid`='{$args['perfilid']}')";
+    $sql="SELECT `rutaid`, `ruta`, `descripcion` FROM `rutas` WHERE `rutas`.`rutaid` IN (SELECT `rutasperfil`.`rutaid` FROM `rutasperfil` WHERE `rutasperfil`.`perfilid`='{$args['perfilid']}')";
     
     
     try {
