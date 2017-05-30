@@ -661,7 +661,7 @@ $app->get("/archivo/[{archivoid}]", function($request, $response, $args) use($db
     $where="1";
     if(isset($args['archivoid']))
         $where="`archivoid`='".$args["archivoid"]."'"; 
-    $sql="SELECT `archivoid`, `nombre`, `gestionid`, `convencionid`, `archivoidaux`, `denominacion`, `observaciones`, `$tabla`.`usuario`, `fecha`, concat(`nombres`,' ',`apellidos`) AS usuarionombre FROM `$tabla` ";
+    $sql="SELECT `archivoid`, `nombre`, `gestionid`, `convencionid`, `archivoidaux`, `denominacion`, `observaciones`, `$tabla`.`usuario`, `fecha`, `fechaexp`, concat(`nombres`,' ',`apellidos`) AS usuarionombre FROM `$tabla` ";
     $sql.=" LEFT JOIN `usuarios` ON `usuarios`.`usuario`=`$tabla`.`usuario`";
     $sql.=" WHERE {$where}";
     
@@ -767,6 +767,7 @@ $app->put("/archivo", function($request, $response, $args) use($db, $app) {
     
 });
 
+// Eliminar
 $app->delete('/archivo/{archivoid}', function ($request, $response, $args) use($db, $app) {
     if (!$request->hasHeader('Authorization')) {
         return $response
@@ -894,6 +895,7 @@ $app->post('/archivo-upload', function ($request, $response, $args) {
 });
 
 $app->get("/archivo-download/{archivoid}", function($request, $response, $args) use($db, $app) { 
+    
     if (!$request->hasHeader('Authorization')) {
         return $response
             ->withHeader('Content-type', 'application/json')
@@ -930,6 +932,7 @@ $app->get("/archivo-download/{archivoid}", function($request, $response, $args) 
     $tabla2=PREFIJO."aprobacion";
 
     $sql="select case when count(archivoid)>0 then 's' else 'n' end as permiso from `{$tabla}` where archivoid='{$args["archivoid"]}' and ( archivoid not in (select archivoid from `{$tabla2}` where archivoid=`{$tabla}`.archivoid and aprobado<>1) or archivoid in (select archivoid from `{$tabla2}` where archivoid=`{$tabla}`.archivoid and usuario='{$usuario}'))";
+    // $sql="select SQL_NO_CACHE * from (select case when count(archivoid)>0 then 's' else 'n' end as permiso from `gd_aprobacion` where archivoid='PGD001' AND aprobado=1 union ALL select case when count(archivoid)>0 then 's' else 'n' end as permiso from `gd_revision` where archivoid='{$args["archivoid"]}' AND revisado=1) as t ORDER by permiso limit 1";
 
     // $sql="select count(archivoid) from gd_archivo where archivoid='PGD001' and archivoid not in (select archivoid from gd_aprobacion where archivoid=gd_archivo.archivoid and aprobado<>1)";
     
@@ -950,33 +953,34 @@ $app->get("/archivo-download/{archivoid}", function($request, $response, $args) 
     }
     $aprobado=false;
     $data = array();
-    if($query)
+    if($query){
         while( $fila = $query->fetch(PDO::FETCH_ASSOC) ) {
             $data[] = $fila;
             if(($fila['permiso'])=='s'){
                 $aprobado=true;
             }
         }
+    }
 
-        $sql="SELECT `nombre` FROM `{$tabla}` WHERE `{$tabla}`.`archivoid`='{$args["archivoid"]}'";
+    $sql="SELECT `nombre` FROM `{$tabla}` WHERE `{$tabla}`.`archivoid`='{$args["archivoid"]}'";
+    
+    try {
+        $query = $db->query($sql);
+    } catch(PDOException $e) {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => $e->getMessage()))
+            ; 
+    }
+    $pdfOrigen="";
+    
+    if($query){
         
-        try {
-            $query = $db->query($sql);
-        } catch(PDOException $e) {
-            return $response
-                ->withHeader('Content-type', 'application/json')
-                ->withJson(array('error' => $e->getMessage()))
-                ; 
+        while( $fila = $query->fetch(PDO::FETCH_ASSOC) ) {
+            $pdfOrigen="uploads/".$fila["nombre"];
         }
-        $pdfOrigen="";
-        
-        if($query){
-            
-            while( $fila = $query->fetch(PDO::FETCH_ASSOC) ) {
-                $pdfOrigen="uploads/".$fila["nombre"];
-            }
-        }
-       $firmas = array();
+    }
+    $firmas = array();
       
 	// $pdfOrigen="uploads/prueba2.pdf";
     // $pdfDestino="uploads/prueba.pdf";
@@ -995,6 +999,11 @@ $app->get("/archivo-download/{archivoid}", function($request, $response, $args) 
     }
     
     $sql="SELECT CASE WHEN count(archivoid)<=0 then 's' else 'n' end as permiso FROM `{$tabla2}` WHERE archivoid='{$args["archivoid"]}' AND gd_aprobacion.aprobado<1";
+    $sql="select SQL_NO_CACHE * from (select case when count(archivoid)>0 then 's' else 'n' end as permiso from `gd_aprobacion` where archivoid='PGD001' AND aprobado=1 union ALL select case when count(archivoid)>0 then 's' else 'n' end as permiso from `gd_revision` where archivoid='{$args["archivoid"]}' AND revisado=1) as t ORDER by permiso limit 1";
+    //  return $response
+    //         ->withHeader('Content-type', 'application/json')
+    //         ->withJson(array('error' => $sql))
+    //         ; 
     try {
         $query = $db->query($sql);
     } catch(PDOException $e) {
@@ -1023,7 +1032,12 @@ $app->get("/archivo-download/{archivoid}", function($request, $response, $args) 
 
     }
     $sql="SELECT CONCAT(usuarios.nombres,' ',usuarios.apellidos)razonsocial,perfiles.denominacion as cargo,usuarios.firma FROM gd_aprobacion INNER JOIN usuarios ON usuarios.usuario=gd_aprobacion.usuario inner join perfiles on perfiles.perfilid=usuarios.perfilid WHERE archivoid='{$args["archivoid"]}'";
-    
+    $sql="  SELECT CONCAT(usuarios.nombres,' ',usuarios.apellidos)razonsocial,perfiles.denominacion as cargo,usuarios.firma, 'ELABORO' as rol
+            FROM gd_archivo INNER JOIN usuarios ON usuarios.usuario=gd_archivo.usuario inner join perfiles on perfiles.perfilid=usuarios.perfilid WHERE archivoid='{$args["archivoid"]}'
+            UNION ALL
+            SELECT CONCAT(usuarios.nombres,' ',usuarios.apellidos)razonsocial,perfiles.denominacion as cargo,usuarios.firma, 'REVISO' AS rol FROM gd_revision INNER JOIN usuarios ON usuarios.usuario=gd_revision.usuario inner join perfiles on perfiles.perfilid=usuarios.perfilid WHERE archivoid='{$args["archivoid"]}'
+            UNION ALL
+            SELECT CONCAT(usuarios.nombres,' ',usuarios.apellidos)razonsocial,perfiles.denominacion as cargo,usuarios.firma, 'APROBO' AS rol FROM gd_aprobacion INNER JOIN usuarios ON usuarios.usuario=gd_aprobacion.usuario inner join perfiles on perfiles.perfilid=usuarios.perfilid WHERE archivoid='{$args["archivoid"]}'";
      try {
         $query = $db->query($sql);
     } catch(PDOException $e) {
@@ -1072,6 +1086,88 @@ $app->get("/archivo-download/{archivoid}", function($request, $response, $args) 
             ;
 });
 
+$app->post("/archivo/{archivoid}", function($request, $response, $args) use($db, $app) { 
+    if (!$request->hasHeader('Authorization')) {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => 'Token no encontrado en la solicitud.'))
+            ;
+    }
+    $jwt=explode(" ",$request->getHeaderLine('Authorization'))[1];
+    
+    $dataUser=getToken($jwt);
+    if(array_key_exists('error', $dataUser)){
+       return $response
+            ->withStatus(401)
+            ->withHeader('Content-type', 'application/json')
+            ->withJson($dataUser)
+            ;
+    }
+    
+    $usuario=$dataUser->usuario;
+    $clave=$dataUser->clave;
+   
+    if(!$usuario){
+        return $response
+            ->withStatus(401)
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => 'No hemos podido identificarte, intenta volver a iniciar sesión'))
+            ;
+    }else{
+
+    }
+
+
+    $json = $request->getParsedBody();
+    $modelo = json_decode($json['json'],true)["model"];
+     
+    // return $response
+    //         ->withHeader('Content-type', 'application/json')
+    //         ->withJson(array('error' => json_encode((int)$perfil["activo"])))
+    //         ;
+
+
+    // $modelo["convencionid"]=strtoupper($modelo["convencionid"]);
+    // $modelo["denominacion"]=strtoupper($modelo["denominacion"]);
+    $tabla=PREFIJO."archivo";
+    
+    $sql="UPDATE `{$tabla}` SET `archivoid`='{$modelo['archivoid']}',`nombre`='{$modelo['nombre']}',`gestionid`='{$modelo['gestionid']}',`convencionid`='{$modelo['convencionid']}',`archivoidaux`='{$modelo['archivoidaux']}',`denominacion`='{$modelo['denominacion']}',`observaciones`='{$modelo['observaciones']}',`usuario`='{$modelo['usuario']}',`fecha`='{$modelo['fecha']}',`fechaexp`='{$modelo['fechaexp']}' WHERE `archivoid`='{$args['archivoid']}'";
+    // return $response
+    //         ->withHeader('Content-type', 'application/json')
+    //         ->withJson(array('error' => json_encode($sql)))
+    //         ;
+
+
+    try {
+        $update = $db->query($sql);
+    } catch(PDOException $e) {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => $e->getMessage()))
+            ; 
+    }
+
+	if ($update) {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('success' => 'Datos del registro actualizados'))
+            ;
+	} else {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => 'El registro no ha podido ser actualizado, vuelve a intentarlo'))
+            ; 
+	}
+    
+    // $token = newToken($dataUser);
+	// $result = array("status" => "success", "data" => $data[0], "token"=>$token);
+	// echo json_encode($result);
+    return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array("status" => "success", "data" => $data[0], "token"=>newToken($dataUser)))
+            ;
+    
+});
 
 /* A P R O B A C I O N E S */
 $app->get("/aprobacion/[{archivoid}]", function($request, $response, $args) use($db, $app) { 
@@ -1130,7 +1226,7 @@ $app->get("/aprobacion/[{archivoid}]", function($request, $response, $args) use(
     $data = array();
     if($query)
         while( $fila = $query->fetch(PDO::FETCH_ASSOC) ) {
-            $fila['aprobado']=($model["aprobado"]==="1");
+            // $fila['aprobado']=($model["aprobado"]=="1");
             $data[] = $fila;
         }
 
@@ -1620,7 +1716,7 @@ $app->get("/revision/[{archivoid}]", function($request, $response, $args) use($d
     $data = array();
     if($query)
         while( $fila = $query->fetch(PDO::FETCH_ASSOC) ) {
-            $fila['revisado']=($model["revisado"]==="1");
+            // $fila['revisado']=($model["revisado"]==="1");
             $data[] = $fila;
         }
 
@@ -1770,4 +1866,65 @@ $app->put("/revision", function($request, $response, $args) use($db, $app) {
             ;
 });
 
+$app->get("/revisar/{archivoid}/{revisado}", function($request, $response, $args) use($db, $app) { 
+    if (!$request->hasHeader('Authorization')) {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => 'Token no encontrado en la solicitud.'))
+            ;
+    }
+    $jwt=explode(" ",$request->getHeaderLine('Authorization'))[1];
+   
+    $dataUser=getToken($jwt);
+
+    if(array_key_exists('error', $dataUser)){
+       return $response
+            ->withStatus(401)
+            ->withHeader('Content-type', 'application/json')
+            ->withJson($dataUser)
+            ;
+    }
+    
+    $usuario=$dataUser->usuario;
+    $clave=$dataUser->clave;
+   
+    if(!$usuario){
+        return $response
+            ->withStatus(401)
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => 'No hemos podido identificarte, intenta volver a iniciar sesión'))
+            ;
+    }else{
+
+    }
+    $tabla=PREFIJO."revision";
+    $where="`archivoid`='".$args["archivoid"]."' AND `usuario`='{$usuario}'"; 
+    $sql="UPDATE `{$tabla}` SET `revisado`='".$args["revisado"]."'";
+    $sql.=" WHERE {$where}";
+    //   return $response
+    //         ->withHeader('Content-type', 'application/json')
+    //         ->withJson(array('error' => $sql))
+    //         ; 
+    
+    try {
+        $update = $db->query($sql);
+    } catch(PDOException $e) {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => $e->getMessage()))
+            ; 
+    }
+
+    if ($update) {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('success' => 'Documento actualizado'))
+            ;
+	} else {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => 'El documento no ha podido ser actualizado, vuelve a intentarlo'))
+            ; 
+	}
+});
 $app->run();

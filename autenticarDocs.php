@@ -49,15 +49,15 @@ function firmar($firmas,$pdfOrigen,$pdfDestino,$demo=false){
         if(count($firmas)>0)
         {
             $firma='uploads/firmas/jvalera.png';        
-            $pdf->Image($firmas[0]['firma'], 5, $pdf->GetY()-30, 33.78);
+            $pdf->Image($firmas[0]['firma'], 10, $pdf->GetY()-30, 33.78);
             if (array_key_exists(1, $firmas)) 
-                $pdf->Image($firmas[1]['firma'], 45, $pdf->GetY()-30, 33.78);
+                $pdf->Image($firmas[1]['firma'], 50, $pdf->GetY()-30, 33.78);
             if (array_key_exists(2, $firmas)) 
-                $pdf->Image($firmas[2]['firma'], 85, $pdf->GetY()-30, 33.78);
+                $pdf->Image($firmas[2]['firma'], 90, $pdf->GetY()-30, 33.78);
             if (array_key_exists(3, $firmas)) 
-                $pdf->Image($firmas[3]['firma'], 125, $pdf->GetY()-30, 33.78);
+                $pdf->Image($firmas[3]['firma'], 130, $pdf->GetY()-30, 33.78);
             if (array_key_exists(4, $firmas)) 
-                $pdf->Image($firmas[4]['firma'], 165, $pdf->GetY()-30, 33.78);
+                $pdf->Image($firmas[4]['firma'], 170, $pdf->GetY()-30, 33.78);
             $pdf->SetY(-10);
             $pdf->SetX(-370);
             
@@ -89,7 +89,7 @@ function firmar($firmas,$pdfOrigen,$pdfDestino,$demo=false){
                 $pdf->Cell(30, -30, substr($nombre,0,30), 0, 0, 'C');
             }
 
-
+            /* C A R G O S */
             $pdf->SetFont('Arial','',8);
             $pdf->SetY(-1);
             //$pdf->SetX(-370);   
@@ -115,6 +115,34 @@ function firmar($firmas,$pdfOrigen,$pdfDestino,$demo=false){
                 $cargo=str_pad($firmas[4]['cargo'], 30, " ", STR_PAD_BOTH); 
                 $pdf->Cell(30, -30, substr($cargo,0,30), 0, 0, 'C');
             }
+
+
+            /* R O L E S */
+            $pdf->SetFont('Arial','B',12);
+            $pdf->SetY(-5);
+            $nombre=str_pad($firmas[0]['rol'], 10, " ", STR_PAD_BOTH); 
+            $pdf->Cell(30, -70, $nombre, 0, 0, 'C');
+            $pdf->Cell(10, -70, "", 0, 0, 'C');
+            if (array_key_exists(1, $firmas)) {
+                $cargo=str_pad($firmas[1]['rol'], 30, " ", STR_PAD_BOTH); 
+                $pdf->Cell(30, -70, substr($cargo,0,30), 0, 0, 'C');
+                $pdf->Cell(10, -70, "", 0, 0, 'C');
+            }
+            if (array_key_exists(2, $firmas)) {
+                $cargo=str_pad($firmas[2]['rol'], 30, " ", STR_PAD_BOTH); 
+                $pdf->Cell(30, -70, substr($cargo,0,30), 0, 0, 'C');
+                $pdf->Cell(10, -70, "", 0, 0, 'C');
+            }
+            if (array_key_exists(3, $firmas)) {
+                $cargo=str_pad($firmas[3]['rol'], 30, " ", STR_PAD_BOTH); 
+                $pdf->Cell(30, -70, substr($cargo,0,30), 0, 0, 'C');
+                $pdf->Cell(10, -70, "", 0, 0, 'C');
+            }
+            if (array_key_exists(4, $firmas)) {
+                $cargo=str_pad($firmas[4]['rol'], 30, " ", STR_PAD_BOTH); 
+                $pdf->Cell(30, -70, substr($cargo,0,30), 0, 0, 'C');
+                $pdf->Cell(10, -70, "", 0, 0, 'C');
+            }
         }
         
         //$pdf->Cell(0, -30, "Administrador", 0, 0, 'C');
@@ -138,12 +166,24 @@ function firmar($firmas,$pdfOrigen,$pdfDestino,$demo=false){
         // $pdf->SetY(-1);$pdf->SetX(-210);$pdf->Cell(0, -30, "Administrador", 0, 0, 'C');
         if($demo)
         {
-            $pdf->SetY(-50);
-            $pdf->SetX(100);
+            // $pdf->SetY(-50);
+            // $pdf->SetX(100);
             $pdf->SetTextColor(240,240,240);
+            
+            // /********************************/
+            $pdf->SetY(-1);
+            $pdf->SetX(100);
+            // $pdf->SetTextColor(0,0,0);
+            $pdf->SetTextColor(217,217,217);
+            
+            // /********************************/
+
+
             // $pdf->SetTextColor(130,130,130);
             $pdf->SetFont('Arial','B',50);
-            $pdf->Cell(30, -170, "NO DEFINITIVO", 0, 0, 'C');
+            // $pdf->Cell(30, -170, "NO DEFINITIVO", 0, 0, 'C');
+            $pdf->Cell(30, -40, "NO DEFINITIVO", 0, 0, 'C');
+            // $pdf->Cell(30, -40, $pdf->GetY(), 0, 0, 'C');
         }
         }
         $pdf->Output($pdfDestino, "F");
@@ -153,23 +193,23 @@ function firmar($firmas,$pdfOrigen,$pdfDestino,$demo=false){
 }
 
 function marcarAgua($pdfOrigen,$pdfDestino){
-        $pdf = new FPDI();
-        $pagecount = $pdf->setSourceFile($pdfOrigen);
+    $pdf = new FPDI();
+    $pagecount = $pdf->setSourceFile($pdfOrigen);
 
-        for($i=1;$i<=$pagecount;$i++){
-            $pdf->AddPage();    
-            $pdf->SetTextColor(0,0,0);
-            $tpl = $pdf->importPage($i);
-            $pdf->useTemplate($tpl);
-            
-            
-            $pdf->SetY(-50);
-            $pdf->SetX(100);
-            $pdf->SetTextColor(240,240,240);
-            // $pdf->SetTextColor(130,130,130);
-            $pdf->SetFont('Arial','B',50);
-            $pdf->Cell(30, -170, "NO DEFINITIVO", 0, 0, 'C');
-        }
-        $pdf->Output($pdfDestino, "F");
-	
+    for($i=1;$i<=$pagecount;$i++){
+        $pdf->AddPage();    
+        $pdf->SetTextColor(0,0,0);
+        $tpl = $pdf->importPage($i);
+        $pdf->useTemplate($tpl);
+        
+        
+        $pdf->SetY(-50);
+        $pdf->SetX(100);
+        $pdf->SetTextColor(240,240,240);
+        // $pdf->SetTextColor(130,130,130);
+        $pdf->SetFont('Arial','B',50);
+        $pdf->Cell(30, -170, "NO DEFINITIVO", 0, 0, 'C');
     }
+    $pdf->Output($pdfDestino, "F");
+
+}
