@@ -12,10 +12,6 @@ function getConnection($tipoConexion="mysql"){
         $dbpass="";
         $dbname="dosimatic";
         if($produccion){
-            $dbname="ixvenezu_pharmashop";
-            $dbuser="ixvenezu_root";
-            $dbpass="enclave.21978";
-
             $dbname="dosisun1_dosimatic";
             $dbuser="dosisun1_root";
             $dbpass="123.qwerty";

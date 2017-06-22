@@ -48,53 +48,59 @@ function firmar($firmas,$pdfOrigen,$pdfDestino,$demo=false){
 
         if(count($firmas)>0)
         {
-            $firma='uploads/firmas/jvalera.png';        
-            $pdf->Image($firmas[0]['firma'], 10, $pdf->GetY()-30, 33.78);
+            //$firma='uploads/firmas/jvalera.png';        
+            $pdf->Image($firmas[0]['firma'], 40, $pdf->GetY()-30, 33.78);
             if (array_key_exists(1, $firmas)) 
-                $pdf->Image($firmas[1]['firma'], 50, $pdf->GetY()-30, 33.78);
+                $pdf->Image($firmas[1]['firma'], 100, $pdf->GetY()-30, 33.78);
             if (array_key_exists(2, $firmas)) 
-                $pdf->Image($firmas[2]['firma'], 90, $pdf->GetY()-30, 33.78);
-            if (array_key_exists(3, $firmas)) 
-                $pdf->Image($firmas[3]['firma'], 130, $pdf->GetY()-30, 33.78);
-            if (array_key_exists(4, $firmas)) 
-                $pdf->Image($firmas[4]['firma'], 170, $pdf->GetY()-30, 33.78);
+                $pdf->Image($firmas[2]['firma'], 150, $pdf->GetY()-30, 33.78);
+
+            if(false) {
+                if (array_key_exists(3, $firmas)) 
+                    $pdf->Image($firmas[3]['firma'], 130, $pdf->GetY()-30, 33.78);
+                if (array_key_exists(4, $firmas)) 
+                    $pdf->Image($firmas[4]['firma'], 170, $pdf->GetY()-30, 33.78);
+            }
             $pdf->SetY(-10);
             $pdf->SetX(-370);
             
             //Select Arial italic 8
             $pdf->SetFont('Arial','B',8);
             $pdf->SetY(-5);
-            
-            $nombre=str_pad($firmas[0]['razonsocial'], 10, " ", STR_PAD_BOTH); 
-            $pdf->Cell(30, -30, $nombre, 0, 0, 'C');
-            //  $pdf->SetY(-5);$pdf->SetX(-370);
-            if (array_key_exists(1, $firmas)) {
-                $pdf->Cell(10, -30, "", 0, 0, 'C');
-                $nombre=str_pad($firmas[1]['razonsocial'], 30, " ", STR_PAD_BOTH); 
-                $pdf->Cell(30, -30, substr($nombre,0,30), 0, 0, 'C');
-                $pdf->Cell(10, -30, "", 0, 0, 'C');
-            }
-            if (array_key_exists(2, $firmas)) {
-                $nombre=str_pad($firmas[2]['razonsocial'], 30, " ", STR_PAD_BOTH); 
-                $pdf->Cell(30, -30, substr($nombre,0,30), 0, 0, 'C');
-                $pdf->Cell(10, -30, "", 0, 0, 'C');
-            }
-            if (array_key_exists(3, $firmas)) {
-                $nombre=str_pad($firmas[3]['razonsocial'], 30, " ", STR_PAD_BOTH); 
-                $pdf->Cell(30, -30, substr($nombre,0,30), 0, 0, 'C');
-                $pdf->Cell(10, -30, "", 0, 0, 'C');
-            }
-            if (array_key_exists(4, $firmas)) {
-                $nombre=str_pad($firmas[4]['razonsocial'], 30, " ", STR_PAD_BOTH); 
-                $pdf->Cell(30, -30, substr($nombre,0,30), 0, 0, 'C');
+            if(false){
+                $nombre=str_pad($firmas[0]['razonsocial'], 10, " ", STR_PAD_BOTH); 
+                $pdf->Cell(30, -30, $nombre, 0, 0, 'C');
+                //  $pdf->SetY(-5);$pdf->SetX(-370);
+                if (array_key_exists(1, $firmas)) {
+                    $pdf->Cell(10, -30, "", 0, 0, 'C');
+                    $nombre=str_pad($firmas[1]['razonsocial'], 30, " ", STR_PAD_BOTH); 
+                    $pdf->Cell(30, -30, substr($nombre,0,30), 0, 0, 'C');
+                    $pdf->Cell(10, -30, "", 0, 0, 'C');
+                }
+                if (array_key_exists(2, $firmas)) {
+                    $nombre=str_pad($firmas[2]['razonsocial'], 30, " ", STR_PAD_BOTH); 
+                    $pdf->Cell(30, -30, substr($nombre,0,30), 0, 0, 'C');
+                    $pdf->Cell(10, -30, "", 0, 0, 'C');
+                }
+                if (array_key_exists(3, $firmas)) {
+                    $nombre=str_pad($firmas[3]['razonsocial'], 30, " ", STR_PAD_BOTH); 
+                    $pdf->Cell(30, -30, substr($nombre,0,30), 0, 0, 'C');
+                    $pdf->Cell(10, -30, "", 0, 0, 'C');
+                }
+                if (array_key_exists(4, $firmas)) {
+                    $nombre=str_pad($firmas[4]['razonsocial'], 30, " ", STR_PAD_BOTH); 
+                    $pdf->Cell(30, -30, substr($nombre,0,30), 0, 0, 'C');
+                }
             }
 
             /* C A R G O S */
             $pdf->SetFont('Arial','',8);
-            $pdf->SetY(-1);
+            $pdf->SetY(-28);
+            $pdf->SetX(40);   
             //$pdf->SetX(-370);   
             $cargo=str_pad($firmas[0]['cargo'], 10, " ", STR_PAD_BOTH); 
-            $pdf->Cell(30, -30, $cargo, 0, 0, 'C');
+            //$pdf->Cell(40, -30, $cargo, 1, 0, 'L');
+            $pdf->MultiCell(40, 3, $cargo, 1, 'L', false);
             $pdf->Cell(10, -30, "", 0, 0, 'C');
             if (array_key_exists(1, $firmas)) {
                 $cargo=str_pad($firmas[1]['cargo'], 30, " ", STR_PAD_BOTH); 

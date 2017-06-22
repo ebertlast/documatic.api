@@ -842,6 +842,7 @@ $app->delete('/archivo/{archivoid}', function ($request, $response, $args) use($
 	}
 });
 
+// Subir Archivo
 $app->post('/archivo-upload', function ($request, $response, $args) {
     $files = $request->getUploadedFiles();
     if (empty($files['files'])) {
@@ -894,6 +895,7 @@ $app->post('/archivo-upload', function ($request, $response, $args) {
     */
 });
 
+//Descargar Archivo
 $app->get("/archivo-download/{archivoid}", function($request, $response, $args) use($db, $app) { 
     
     if (!$request->hasHeader('Authorization')) {
@@ -931,7 +933,7 @@ $app->get("/archivo-download/{archivoid}", function($request, $response, $args) 
     $tabla=PREFIJO."archivo";
     $tabla2=PREFIJO."aprobacion";
 
-    $sql="select case when count(archivoid)>0 then 's' else 'n' end as permiso from `{$tabla}` where archivoid='{$args["archivoid"]}' and ( archivoid not in (select archivoid from `{$tabla2}` where archivoid=`{$tabla}`.archivoid and aprobado<>1) or archivoid in (select archivoid from `{$tabla2}` where archivoid=`{$tabla}`.archivoid and usuario='{$usuario}'))";
+    $sql="select case when count(archivoid)>0 then 's' else 'n' end as permiso from `{$tabla}` where archivoid='{$args["archivoid"]}' and ( archivoid not in (select archivoid from `{$tabla2}` where archivoid=`{$tabla}`.`archivoid` and aprobado<>1) or archivoid in (select archivoid from `{$tabla2}` where archivoid=`{$tabla}`.archivoid and usuario='{$usuario}'))";
     // $sql="select SQL_NO_CACHE * from (select case when count(archivoid)>0 then 's' else 'n' end as permiso from `gd_aprobacion` where archivoid='PGD001' AND aprobado=1 union ALL select case when count(archivoid)>0 then 's' else 'n' end as permiso from `gd_revision` where archivoid='{$args["archivoid"]}' AND revisado=1) as t ORDER by permiso limit 1";
 
     // $sql="select count(archivoid) from gd_archivo where archivoid='PGD001' and archivoid not in (select archivoid from gd_aprobacion where archivoid=gd_archivo.archivoid and aprobado<>1)";
@@ -963,6 +965,12 @@ $app->get("/archivo-download/{archivoid}", function($request, $response, $args) 
     }
 
     $sql="SELECT `nombre` FROM `{$tabla}` WHERE `{$tabla}`.`archivoid`='{$args["archivoid"]}'";
+
+    // return $response
+    //         ->withHeader('Content-type', 'application/json')
+    //         ->withJson(array('error' => $sql))
+    //         ; 
+    
     
     try {
         $query = $db->query($sql);
@@ -999,11 +1007,11 @@ $app->get("/archivo-download/{archivoid}", function($request, $response, $args) 
     }
     
     $sql="SELECT CASE WHEN count(archivoid)<=0 then 's' else 'n' end as permiso FROM `{$tabla2}` WHERE archivoid='{$args["archivoid"]}' AND gd_aprobacion.aprobado<1";
-    $sql="select SQL_NO_CACHE * from (select case when count(archivoid)>0 then 's' else 'n' end as permiso from `gd_aprobacion` where archivoid='PGD001' AND aprobado=1 union ALL select case when count(archivoid)>0 then 's' else 'n' end as permiso from `gd_revision` where archivoid='{$args["archivoid"]}' AND revisado=1) as t ORDER by permiso limit 1";
-    //  return $response
-    //         ->withHeader('Content-type', 'application/json')
-    //         ->withJson(array('error' => $sql))
-    //         ; 
+    $sql="select SQL_NO_CACHE * from (select case when count(archivoid)>0 then 's' else 'n' end as permiso from `gd_aprobacion` where archivoid='{$args["archivoid"]}' AND aprobado=1 union ALL select case when count(archivoid)>0 then 's' else 'n' end as permiso from `gd_revision` where archivoid='{$args["archivoid"]}' AND revisado=1) as t ORDER by permiso limit 1";
+     // return $response
+     //        ->withHeader('Content-type', 'application/json')
+     //        ->withJson(array('error' => $sql))
+     //        ; 
     try {
         $query = $db->query($sql);
     } catch(PDOException $e) {
@@ -1204,8 +1212,9 @@ $app->get("/aprobacion/[{archivoid}]", function($request, $response, $args) use(
     }
     $tabla=PREFIJO."aprobacion";
     $where="1";
-    if(isset($args['archivoid']))
+    if(isset($args['archivoid'])){
         $where="`archivoid`='".$args["archivoid"]."'"; 
+    }
     $sql="SELECT `aprobacionid`, `aprobado`, `archivoid`, `{$tabla}`.`usuario`, `fecha`,concat(`usuarios`.`nombres`,' ',`usuarios`.`apellidos`) as usuarionombre FROM `$tabla` ";
     $sql.="LEFT JOIN `usuarios` ON `usuarios`.`usuario`=`{$tabla}`.`usuario`";
     $sql.=" WHERE {$where}";
@@ -1694,11 +1703,12 @@ $app->get("/revision/[{archivoid}]", function($request, $response, $args) use($d
     }
     $tabla=PREFIJO."revision";
     $where="1";
-    if(isset($args['archivoid']))
+    if(isset($args['archivoid'])){
         $where="`archivoid`='{$args["archivoid"]}'"; 
+    }
     $sql="SELECT `revisionid`, `revisado`, `archivoid`, `{$tabla}`.`usuario`, `fecha`, concat(`usuarios`.`nombres`,' ',`usuarios`.`apellidos`) as usuarionombre FROM `{$tabla}` ";
     $sql.="LEFT JOIN `usuarios` ON `usuarios`.`usuario`=`{$tabla}`.`usuario`";
-    // $sql.=" WHERE {$where}";
+    $sql.=" WHERE {$where}";
     //   return $response
     //         ->withHeader('Content-type', 'application/json')
     //         ->withJson(array('error' => $sql))
