@@ -49,11 +49,11 @@ function firmar($firmas,$pdfOrigen,$pdfDestino,$demo=false){
         if(count($firmas)>0)
         {
             //$firma='uploads/firmas/jvalera.png';        
-            $pdf->Image($firmas[0]['firma'], 40, $pdf->GetY()-30, 33.78);
+            $pdf->Image($firmas[0]['firma'], 40, $pdf->GetY()-30, 30);
             if (array_key_exists(1, $firmas)) 
-                $pdf->Image($firmas[1]['firma'], 100, $pdf->GetY()-30, 33.78);
+                $pdf->Image($firmas[1]['firma'], 90, $pdf->GetY()-30, 30);
             if (array_key_exists(2, $firmas)) 
-                $pdf->Image($firmas[2]['firma'], 150, $pdf->GetY()-30, 33.78);
+                $pdf->Image($firmas[2]['firma'], 140, $pdf->GetY()-30, 30);
 
             if(false) {
                 if (array_key_exists(3, $firmas)) 
@@ -92,62 +92,98 @@ function firmar($firmas,$pdfOrigen,$pdfDestino,$demo=false){
                     $pdf->Cell(30, -30, substr($nombre,0,30), 0, 0, 'C');
                 }
             }
+            /* F E C H A S */
+            $pdf->SetFont('Arial','',8);
+            $pdf->SetY(-25);
+            $pdf->SetX(40);   
+            $fecha=str_pad($firmas[0]['fecha'], 10, " ", STR_PAD_BOTH); 
+            $pdf->MultiCell(50, 4, $fecha, 1, 'L', false);
 
+            $pdf->SetY(-25);
+            $pdf->SetX(40+50);
+            $fecha=str_pad($firmas[1]['fecha'], 10, " ", STR_PAD_BOTH); 
+            $pdf->MultiCell(50, 4, $fecha, 1, 'L', false);
+
+            $pdf->SetY(-25);
+            $pdf->SetX(40+50+50);
+            $fecha=str_pad($firmas[2]['fecha'], 10, " ", STR_PAD_BOTH); 
+            $pdf->MultiCell(50, 4, $fecha, 1, 'L', false);
+
+            /* C E L D A S   V A C I O S */
+            $pdf->SetX(40);
+            $pdf->Cell(50, -20, "", 1, 0, 'C'); // Celda Vacía que pinta el cuadro donde esta la firma
+            $pdf->Cell(50, -20, "", 1, 0, 'C');
+            $pdf->Cell(50, -20, "", 1, 0, 'C');
             /* C A R G O S */
             $pdf->SetFont('Arial','',8);
-            $pdf->SetY(-28);
+            $pdf->SetY(-40);
             $pdf->SetX(40);   
             //$pdf->SetX(-370);   
             $cargo=str_pad($firmas[0]['cargo'], 10, " ", STR_PAD_BOTH); 
             //$pdf->Cell(40, -30, $cargo, 1, 0, 'L');
-            $pdf->MultiCell(40, 3, $cargo, 1, 'L', false);
-            $pdf->Cell(10, -30, "", 0, 0, 'C');
+            $pdf->MultiCell(50, 3, $cargo, 0, 'R', false);
+            $pdf->SetY(-40);
+            $pdf->SetX(90);            
             if (array_key_exists(1, $firmas)) {
-                $cargo=str_pad($firmas[1]['cargo'], 30, " ", STR_PAD_BOTH); 
-                $pdf->Cell(30, -30, substr($cargo,0,30), 0, 0, 'C');
-                $pdf->Cell(10, -30, "", 0, 0, 'C');
+                // $cargo=str_pad($firmas[1]['cargo'], 30, " ", STR_PAD_BOTH); 
+                $cargo=$firmas[1]['cargo']; 
+                // $pdf->Cell(30, -30, substr($cargo,0,30), 0, 0, 'C');
+                $pdf->MultiCell(50, 3, $cargo, 0, 'R', false);
+                // $pdf->Cell(10, -30, "", 0, 0, 'C');
             }
             if (array_key_exists(2, $firmas)) {
+                $pdf->SetY(-40);
+                $pdf->SetX(140);
                 $cargo=str_pad($firmas[2]['cargo'], 30, " ", STR_PAD_BOTH); 
-                $pdf->Cell(30, -30, substr($cargo,0,30), 0, 0, 'C');
-                $pdf->Cell(10, -30, "", 0, 0, 'C');
+                $cargo=$firmas[2]['cargo']; 
+                // $pdf->Cell(30, -30, substr($cargo,0,30), 0, 0, 'C');
+                $pdf->MultiCell(50, 3, $cargo, 0, 'R', false);
+                // $pdf->Cell(10, -30, "", 0, 0, 'C');
             }
-            if (array_key_exists(3, $firmas)) {
-                $cargo=str_pad($firmas[3]['cargo'], 30, " ", STR_PAD_BOTH); 
-                $pdf->Cell(30, -30, substr($cargo,0,30), 0, 0, 'C');
-                $pdf->Cell(10, -30, "", 0, 0, 'C');
-            }
-            if (array_key_exists(4, $firmas)) {
-                $cargo=str_pad($firmas[4]['cargo'], 30, " ", STR_PAD_BOTH); 
-                $pdf->Cell(30, -30, substr($cargo,0,30), 0, 0, 'C');
+            if(false) {
+                if (array_key_exists(3, $firmas)) {
+                    $cargo=str_pad($firmas[3]['cargo'], 30, " ", STR_PAD_BOTH); 
+                    $pdf->Cell(30, -30, substr($cargo,0,30), 0, 0, 'C');
+                    $pdf->Cell(10, -30, "", 0, 0, 'C');
+                }
+                if (array_key_exists(4, $firmas)) {
+                    $cargo=str_pad($firmas[4]['cargo'], 30, " ", STR_PAD_BOTH); 
+                    $pdf->Cell(30, -30, substr($cargo,0,30), 0, 0, 'C');
+                }
             }
 
 
             /* R O L E S */
             $pdf->SetFont('Arial','B',12);
-            $pdf->SetY(-5);
-            $nombre=str_pad($firmas[0]['rol'], 10, " ", STR_PAD_BOTH); 
-            $pdf->Cell(30, -70, $nombre, 0, 0, 'C');
-            $pdf->Cell(10, -70, "", 0, 0, 'C');
+            $pdf->SetY(-45);
+            $pdf->SetX(40);
+            $pdf->SetFillColor(230,230,230);
+            $rol=str_pad($firmas[0]['rol'], 10, " ", STR_PAD_BOTH); 
+            $pdf->Cell(50, 5, $rol, 1, 0, 'C',true);
+            // $pdf->Cell(10, -70, "", 0, 0, 'C');
             if (array_key_exists(1, $firmas)) {
-                $cargo=str_pad($firmas[1]['rol'], 30, " ", STR_PAD_BOTH); 
-                $pdf->Cell(30, -70, substr($cargo,0,30), 0, 0, 'C');
-                $pdf->Cell(10, -70, "", 0, 0, 'C');
+                $rol=str_pad($firmas[1]['rol'], 30, " ", STR_PAD_BOTH); 
+                // $pdf->Cell(30, -70, substr($rol,0,30), 0, 0, 'C');
+                $pdf->Cell(50, 5, $rol, 1, 0, 'C',true);
+                // $pdf->Cell(10, -70, "", 0, 0, 'C');
             }
             if (array_key_exists(2, $firmas)) {
-                $cargo=str_pad($firmas[2]['rol'], 30, " ", STR_PAD_BOTH); 
-                $pdf->Cell(30, -70, substr($cargo,0,30), 0, 0, 'C');
-                $pdf->Cell(10, -70, "", 0, 0, 'C');
+                $rol=str_pad($firmas[2]['rol'], 30, " ", STR_PAD_BOTH); 
+                // $pdf->Cell(30, -70, substr($rol,0,30), 0, 0, 'C');
+                $pdf->Cell(50, 5, $rol, 1, 0, 'C',true);
+                // $pdf->Cell(10, -70, "", 0, 0, 'C');
             }
-            if (array_key_exists(3, $firmas)) {
-                $cargo=str_pad($firmas[3]['rol'], 30, " ", STR_PAD_BOTH); 
-                $pdf->Cell(30, -70, substr($cargo,0,30), 0, 0, 'C');
-                $pdf->Cell(10, -70, "", 0, 0, 'C');
-            }
-            if (array_key_exists(4, $firmas)) {
-                $cargo=str_pad($firmas[4]['rol'], 30, " ", STR_PAD_BOTH); 
-                $pdf->Cell(30, -70, substr($cargo,0,30), 0, 0, 'C');
-                $pdf->Cell(10, -70, "", 0, 0, 'C');
+            if(false) {
+                if (array_key_exists(3, $firmas)) {
+                    $rol=str_pad($firmas[3]['rol'], 30, " ", STR_PAD_BOTH); 
+                    $pdf->Cell(30, -70, substr($rol,0,30), 0, 0, 'C');
+                    $pdf->Cell(10, -70, "", 0, 0, 'C');
+                }
+                if (array_key_exists(4, $firmas)) {
+                    $rol=str_pad($firmas[4]['rol'], 30, " ", STR_PAD_BOTH); 
+                    $pdf->Cell(30, -70, substr($rol,0,30), 0, 0, 'C');
+                    $pdf->Cell(10, -70, "", 0, 0, 'C');
+                }
             }
         }
         

@@ -728,6 +728,8 @@ $app->put("/archivo", function($request, $response, $args) use($db, $app) {
     $modelo["usuario"]=$usuario;
     $tabla=PREFIJO."archivo";
     
+   
+
     $sql="INSERT INTO `{$tabla}`(`archivoid`, `nombre`, `gestionid`, `convencionid`, `archivoidaux`, `denominacion`, `observaciones`, `usuario`) VALUES ('{$modelo['archivoid']}', '{$modelo['nombre']}', '{$modelo['gestionid']}', '{$modelo['convencionid']}', '{$modelo['archivoidaux']}', '{$modelo['denominacion']}', '{$modelo['observaciones']}', '{$modelo['usuario']}')";
 
     // return $response
@@ -738,6 +740,10 @@ $app->put("/archivo", function($request, $response, $args) use($db, $app) {
 
     try {
         $update = $db->query($sql);
+        $sql2="UPDATE gd_revision set revisado=0 where archivoid='{$modelo['archivoid']}'";
+        $db->query($sql2);
+        $sql3="UPDATE gd_aprobacion set aprobado=0 where archivoid='{$modelo['archivoid']}'";
+        $db->query($sql3);
     } catch(PDOException $e) {
         return $response
             ->withHeader('Content-type', 'application/json')
@@ -1040,12 +1046,12 @@ $app->get("/archivo-download/{archivoid}", function($request, $response, $args) 
 
     }
     $sql="SELECT CONCAT(usuarios.nombres,' ',usuarios.apellidos)razonsocial,perfiles.denominacion as cargo,usuarios.firma FROM gd_aprobacion INNER JOIN usuarios ON usuarios.usuario=gd_aprobacion.usuario inner join perfiles on perfiles.perfilid=usuarios.perfilid WHERE archivoid='{$args["archivoid"]}'";
-    $sql="  SELECT CONCAT(usuarios.nombres,' ',usuarios.apellidos)razonsocial,perfiles.denominacion as cargo,usuarios.firma, 'ELABORO' as rol
+    $sql="  SELECT CONCAT(usuarios.nombres,' ',usuarios.apellidos)razonsocial,perfiles.denominacion as cargo,usuarios.firma, 'ELABORO' as rol, DATE_FORMAT(fecha, 'Fecha de Emision: %d/%m/%Y') AS fecha
             FROM gd_archivo INNER JOIN usuarios ON usuarios.usuario=gd_archivo.usuario inner join perfiles on perfiles.perfilid=usuarios.perfilid WHERE archivoid='{$args["archivoid"]}'
             UNION ALL
-            SELECT CONCAT(usuarios.nombres,' ',usuarios.apellidos)razonsocial,perfiles.denominacion as cargo,usuarios.firma, 'REVISO' AS rol FROM gd_revision INNER JOIN usuarios ON usuarios.usuario=gd_revision.usuario inner join perfiles on perfiles.perfilid=usuarios.perfilid WHERE archivoid='{$args["archivoid"]}'
+            SELECT CONCAT(usuarios.nombres,' ',usuarios.apellidos)razonsocial,perfiles.denominacion as cargo,usuarios.firma, 'REVISO' AS rol, DATE_FORMAT(fecha, 'Fecha de Aplicacion: %d/%m/%Y') AS fecha FROM gd_revision INNER JOIN usuarios ON usuarios.usuario=gd_revision.usuario inner join perfiles on perfiles.perfilid=usuarios.perfilid WHERE archivoid='{$args["archivoid"]}'
             UNION ALL
-            SELECT CONCAT(usuarios.nombres,' ',usuarios.apellidos)razonsocial,perfiles.denominacion as cargo,usuarios.firma, 'APROBO' AS rol FROM gd_aprobacion INNER JOIN usuarios ON usuarios.usuario=gd_aprobacion.usuario inner join perfiles on perfiles.perfilid=usuarios.perfilid WHERE archivoid='{$args["archivoid"]}'";
+            SELECT CONCAT(usuarios.nombres,' ',usuarios.apellidos)razonsocial,perfiles.denominacion as cargo,usuarios.firma, 'APROBO' AS rol, (SELECT DATE_FORMAT(fechaexp, 'Vigencia: %d/%m/%Y') FROM `gd_archivo` WHERE archivoid='{$args["archivoid"]}') AS fecha FROM gd_aprobacion INNER JOIN usuarios ON usuarios.usuario=gd_aprobacion.usuario inner join perfiles on perfiles.perfilid=usuarios.perfilid WHERE archivoid='{$args["archivoid"]}'";
      try {
         $query = $db->query($sql);
     } catch(PDOException $e) {
@@ -1448,7 +1454,7 @@ $app->get("/aprobar/{archivoid}/{aprobado}", function($request, $response, $args
     }
     $tabla=PREFIJO."aprobacion";
     $where="`archivoid`='".$args["archivoid"]."' AND `usuario`='{$usuario}'"; 
-    $sql="UPDATE `{$tabla}` SET `aprobado`='".$args["aprobado"]."'";
+    $sql="UPDATE `{$tabla}` SET `aprobado`='".$args["aprobado"]."', `fecha`=NOW()";
     $sql.=" WHERE {$where}";
     //   return $response
     //         ->withHeader('Content-type', 'application/json')
@@ -1875,7 +1881,7 @@ $app->put("/revision", function($request, $response, $args) use($db, $app) {
             ->withJson(array("status" => "success", "data" => $data[0], "token"=>newToken($dataUser)))
             ;
 });
-
+/* Aprobar Revisión */
 $app->get("/revisar/{archivoid}/{revisado}", function($request, $response, $args) use($db, $app) { 
     if (!$request->hasHeader('Authorization')) {
         return $response
@@ -1909,7 +1915,7 @@ $app->get("/revisar/{archivoid}/{revisado}", function($request, $response, $args
     }
     $tabla=PREFIJO."revision";
     $where="`archivoid`='".$args["archivoid"]."' AND `usuario`='{$usuario}'"; 
-    $sql="UPDATE `{$tabla}` SET `revisado`='".$args["revisado"]."'";
+    $sql="UPDATE `{$tabla}` SET `revisado`='".$args["revisado"]."', `fecha`=NOW()";
     $sql.=" WHERE {$where}";
     //   return $response
     //         ->withHeader('Content-type', 'application/json')
