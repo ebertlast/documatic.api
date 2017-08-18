@@ -37,9 +37,20 @@ function firmar($firmas,$pdfOrigen,$pdfDestino,$demo=false){
         $pagecount = $pdf->setSourceFile($pdfOrigen);
 
         for($i=1;$i<=$pagecount;$i++){
-        $pdf->AddPage();    
+        //$pdf->AddPage();    
         $pdf->SetTextColor(0,0,0);
         $tpl = $pdf->importPage($i);
+
+        /* Cambiando a horizontal o vertical la página*/
+        $size = $pdf->getTemplateSize($tpl);
+        // create a page (landscape or portrait depending on the imported page size)
+        if ($size['w'] > $size['h']) {
+            $pdf->AddPage('L', array($size['w'], $size['h']));
+        } else {
+            $pdf->AddPage('P', array($size['w'], $size['h']));
+        }
+
+
         //Use this page as template
         $pdf->useTemplate($tpl);
         
@@ -225,6 +236,7 @@ function firmar($firmas,$pdfOrigen,$pdfDestino,$demo=false){
             $pdf->SetFont('Arial','B',50);
             // $pdf->Cell(30, -170, "NO DEFINITIVO", 0, 0, 'C');
             $pdf->Cell(30, -40, "NO DEFINITIVO", 0, 0, 'C');
+            // $pdf->Cell(30, -40, "E B E R T", 0, 0, 'C');
             // $pdf->Cell(30, -40, $pdf->GetY(), 0, 0, 'C');
         }
         }
@@ -251,6 +263,7 @@ function marcarAgua($pdfOrigen,$pdfDestino){
         // $pdf->SetTextColor(130,130,130);
         $pdf->SetFont('Arial','B',50);
         $pdf->Cell(30, -170, "NO DEFINITIVO", 0, 0, 'C');
+        // $pdf->Cell(30, -170, "E B E R T", 0, 0, 'C');
     }
     $pdf->Output($pdfDestino, "F");
 
