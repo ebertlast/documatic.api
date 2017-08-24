@@ -568,6 +568,87 @@ $app->post("/perfil/{perfilid}", function($request, $response, $args) use($db, $
     
 });
 
+/** Agrega un Perfil */
+$app->post("/nuevoperfil", function($request, $response, $args) use($db, $app) { 
+    if (!$request->hasHeader('Authorization')) {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => 'Token no encontrado en la solicitud.'))
+            ;
+    }
+    $jwt=explode(" ",$request->getHeaderLine('Authorization'))[1];
+    
+    $dataUser=getToken($jwt);
+    if(array_key_exists('error', $dataUser)){
+       return $response
+            ->withStatus(401)
+            ->withHeader('Content-type', 'application/json')
+            ->withJson($dataUser)
+            ;
+    }
+    
+    $usuario=$dataUser->usuario;
+    $clave=$dataUser->clave;
+   
+    if(!$usuario){
+        return $response
+            ->withStatus(401)
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => 'No hemos podido identificarte, intenta volver a iniciar sesión'))
+            ;
+    }else{
+
+    }
+
+    $json = $request->getParsedBody();
+    $perfil = json_decode($json['json'],true)["perfil"];
+     
+    // return $response
+    //         ->withHeader('Content-type', 'application/json')
+    //         ->withJson(array('error' => json_encode((int)$perfil["activo"])))
+    //         ;
+
+
+    $activo=(int)$perfil['activo'];
+    $sql="INSERT INTO `perfiles`(`perfilid`,`denominacion`,`activo`) VALUES ('{$perfil["perfilid"]}','{$perfil["denominacion"]}',{$activo} )";
+
+    // return $response
+    //         ->withHeader('Content-type', 'application/json')
+    //         ->withJson(array('error' => json_encode($sql)))
+    //         ;
+
+
+    try {
+        $inserted = $db->query($sql);
+    } catch(PDOException $e) {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => $e->getMessage()))
+            ; 
+    }
+
+	if ($inserted) {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('success' => 'Registro agregado a la base de datos'))
+            ;
+	} else {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => 'El registro no ha podido ser ingresado, vuelve a intentarlo'))
+            ; 
+	}
+    
+    // $token = newToken($dataUser);
+	// $result = array("status" => "success", "data" => $data[0], "token"=>$token);
+	// echo json_encode($result);
+    return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array("status" => "success", "data" => $data[0], "token"=>newToken($dataUser)))
+            ;
+    
+});
+
 //http://localhost:8082/Angular/unidosis/api/seguridad.php/usuariosenperfil/admin
 $app->get("/usuariosenperfil/{perfilid}", function($request, $response, $args) use($db, $app) { 
     if (!$request->hasHeader('Authorization')) {
