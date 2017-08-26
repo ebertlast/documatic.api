@@ -1,0 +1,5 @@
+update gd_revision set revisado=1 where archivoid='PGA-02';
+update gd_aprobacion set aprobado=1 where archivoid='PGA-02';
+
+SELECT version FROM `gd_archivo` WHERE `archivoid`='PGA-02'
+UPDATE `gd_archivo` SET `version`=(`version`+1) WHERE `archivoid`='PGA-02'
