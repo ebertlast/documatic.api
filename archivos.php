@@ -906,7 +906,7 @@ $app->put("/archivo", function($request, $response, $args) use($db, $app) {
 
 
 
-    $sql="INSERT INTO `{$tabla}`(`archivoid`, `nombre`, `gestionid`, `convencionid`, `archivoidaux`, `denominacion`, `observaciones`, `usuario`,`vinculadoa`) VALUES ('{$modelo['archivoid']}', '{$modelo['nombre']}', '{$modelo['gestionid']}', '{$modelo['convencionid']}', '{$modelo['archivoidaux']}', '{$modelo['denominacion']}', '{$modelo['observaciones']}', '{$modelo['usuario']}', '{$modelo['vinculadoa']}')";
+    $sql="INSERT INTO `{$tabla}`(`archivoid`, `nombre`, `gestionid`, `convencionid`, `archivoidaux`, `denominacion`, `observaciones`, `usuario`,`vinculadoa`, `fechaexp`) VALUES ('{$modelo['archivoid']}', '{$modelo['nombre']}', '{$modelo['gestionid']}', '{$modelo['convencionid']}', '{$modelo['archivoidaux']}', '{$modelo['denominacion']}', '{$modelo['observaciones']}', '{$modelo['usuario']}', '{$modelo['vinculadoa']}',DATE_ADD(NOW(), INTERVAL 5 YEAR))";
 
         // return $response
         //         ->withHeader('Content-type', 'application/json')
