@@ -5,6 +5,7 @@ require 'vendor/autoload.php';
 require 'tokens.php';
 require 'conexdb.php';
 require 'autenticarDocs.php';
+require 'mailer.php';
 /*Intento de capturar los errores de SQL o PHP*/
 /*
 $container = $app->getContainer();
@@ -2038,5 +2039,84 @@ $app->get("/eliminarmenu/{menuid}", function($request, $response, $args) use($db
             ->withJson(array("status" => "success", "data" => $data[0], "token"=>newToken($dataUser)))
             ;
     
+});
+
+
+$app->get("/cambiarclave/{clave}", function($request, $response, $args) use($db, $app) { 
+    if (!$request->hasHeader('Authorization')) {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => 'Token no encontrado en la solicitud.'))
+            ;
+    }
+    $jwt=explode(" ",$request->getHeaderLine('Authorization'))[1];
+   
+    $dataUser=getToken($jwt);
+
+    if(array_key_exists('error', $dataUser)){
+       return $response
+            ->withStatus(401)
+            ->withHeader('Content-type', 'application/json')
+            ->withJson($dataUser)
+            ;
+    }
+    
+    $usuario=$dataUser->usuario;
+    // $clave=$dataUser->clave;
+   
+
+    if(!$usuario){
+        return $response
+            ->withStatus(401)
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => 'No hemos podido identificarte, intenta volver a iniciar sesión'))
+            ;
+    }else{
+        $sql="SELECT `usuario`, `email`, `masculino`, `fechanacimiento`, `usuarios`.`activo`, `fecharegistro`, `nombres`, `apellidos`, `avatar`, `usuarios`.`perfilid`,`perfiles`.`denominacion` as 'perfil', `usuarios`.`firma` FROM `usuarios` LEFT JOIN `perfiles` ON `usuarios`.`perfilid`=`perfiles`.`perfilid` WHERE '{$usuario}' IN (`usuarios`.`usuario`,`usuarios`.`email`);";
+        try {
+            $query = $db->query($sql);
+        } catch(PDOException $e) {
+            return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withJson(array('error' => $e->getMessage()))
+                ; 
+        }
+        $datosDelUsuario = array();
+        if($query){
+            $fila = $query->fetch(PDO::FETCH_ASSOC);
+            if($fila){
+                $datosDelUsuario = $fila;
+                $email=$fila["email"];
+                $nombres=$fila["nombres"]." ".$fila["apellidos"];
+            }
+        }
+
+    }
+
+
+    $sql="UPDATE `usuarios` SET `usuarios`.`clave`=md5('{$args['clave']}') WHERE `usuarios`.`usuario`='{$usuario}';";
+    
+    try {
+        $update = $db->query($sql);
+        notificarCambioClave($email,$nombres,$args['clave']);
+    } catch(PDOException $e) {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => $e->getMessage()))
+            ; 
+    }
+
+    if ($update) {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('success' => 'Clave actualizada'))
+            // ->withJson(array('success' => ))
+            ;
+	} else {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => 'La clave no ha podido ser actualizada, vuelve a intentarlo'))
+            ; 
+	}
 });
 $app->run();

@@ -99,11 +99,11 @@ function mailing($asunto,$cuerpoHTML,$cuerpoTXT,$destinatario,$razonsocial=''){
     $mail->isSMTP();                                      // Set mailer to use SMTP
     $mail->Host = 'arauca.tepuyserver.net';  // Specify main and backup SMTP servers
     $mail->SMTPAuth = true;                               // Enable SMTP authentication
-    $mail->Username = 'ezerpa@dosisunitarias.com';                 // SMTP username
-    $mail->Password = '201619duv';                           // SMTP password
+    $mail->Username = 'documatic@dosisunitarias.com';                 // SMTP username
+    $mail->Password = '123.qwerty';                           // SMTP password
     $mail->SMTPSecure = 'ssl';                            // Enable TLS encryption, `ssl` also accepted
     $mail->Port =  465;                                    // TCP port to connect to
-    $mail->setFrom('ezerpa@dosisunitarias.com', $asunto);
+    $mail->setFrom('documatic@dosisunitarias.com', $asunto);
      $mail->addAddress($destinatario, (trim($razonsocial)=="")?"Estimado usuario":$razonsocial);     // Add a recipient
     $mail->addReplyTo('ezerpa@dosisunitarias.com', 'Información');
     $mail->isHTML(true);                                  // Set email format to HTML
@@ -121,7 +121,15 @@ function mailing($asunto,$cuerpoHTML,$cuerpoTXT,$destinatario,$razonsocial=''){
 function notificar($destinatario,$razonsocial,$cantidad){
     $asunto='Notificaciones Gestion de Calidad';
     $cuerpoTXT='Estimado '.$razonsocial.', le notificamos de Dosis Unitarias de Colombia que '.$cantidad.' documentos necesitan de su atencion para la aprobacion de los mismos';
-    $url='http://dosisunitarias.com/gestion_documental/dist/';
+    $url='http://dosisunitarias.com/';
     $cuerpoHTML=construirEmail($url,$razonsocial,$cantidad);
+    mailing($asunto,$cuerpoHTML,$cuerpoTXT,$destinatario,$razonsocial);
+}
+
+function notificarCambioClave($destinatario,$razonsocial,$clave){
+    $asunto='Cambio de claves - Sistema de Gestion de Calidad';
+    $cuerpoTXT='Estimado '.$razonsocial.', le notificamos de Dosis Unitarias de Colombia que su nueva clave para acceder a nuestro sistema es: '.$clave.'';
+    $url='http://dosisunitarias.com/';
+    $cuerpoHTML=$cuerpoTXT;//construirEmail($url,$razonsocial,$cantidad);
     mailing($asunto,$cuerpoHTML,$cuerpoTXT,$destinatario,$razonsocial);
 }
