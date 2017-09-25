@@ -1710,7 +1710,8 @@ $app->get("/listadomaestro", function($request, $response, $args) use($db, $app)
     $sql.=" LEFT JOIN `$gestion` ON `$tabla`.`gestionid`=`$gestion`.`gestionid`";
     $sql.=" LEFT JOIN `$convencion` ON `$tabla`.`convencionid`=`$convencion`.`convencionid`";
     $sql.=" WHERE {$where}";
-    $sql.=" ORDER BY `$tabla`.`archivoid`";
+    // $sql.=" ORDER BY `$tabla`.`archivoid`";
+    $sql.=" ORDER BY REPLACE(`$tabla`.`archivoid`,'I-','')";
     try {
         $query = $db->query($sql);
     } catch(PDOException $e) {
@@ -2025,6 +2026,28 @@ $app->get("/aprobar/{archivoid}/{aprobado}", function($request, $response, $args
     }else{
 
     }
+
+    // Si no esta revisado no puede aprobarlo
+    $sql="SELECT COUNT(`revisionid`) FROM `gd_revision` WHERE `archivoid`='{$args["archivoid"]}' AND revisado=0";
+    try {
+        $query = $db->query($sql);
+    } catch(PDOException $e) {
+        return $response
+        ->withHeader('Content-type', 'application/json')
+        ->withJson(array('error' => $e->getMessage()))
+        ; 
+    }
+    while( $fila = $query->fetch(PDO::FETCH_ASSOC) ) {
+            // $fila['aprobado']=($model["aprobado"]=="1");
+        $data[] = $fila;
+        if((int)$fila[0]==0){
+            return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withJson(array('error' => "Para poder aprobarlo debe ser revisado previamente. Aún falta aprobar la revisión."))
+            ; 
+        }
+    }
+
     $tabla=PREFIJO."aprobacion";
     $where="`archivoid`='".$args["archivoid"]."' AND `usuario`='{$usuario}'"; 
     $sql="UPDATE `{$tabla}` SET `aprobado`='".$args["aprobado"]."', `fecha`=NOW()";
