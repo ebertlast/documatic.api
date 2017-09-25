@@ -2028,7 +2028,7 @@ $app->get("/aprobar/{archivoid}/{aprobado}", function($request, $response, $args
     }
 
     // Si no esta revisado no puede aprobarlo
-    $sql="SELECT COUNT(`revisionid`) FROM `gd_revision` WHERE `archivoid`='{$args["archivoid"]}' AND revisado=0";
+    $sql="SELECT CASE WHEN COUNT(`revisionid`)<=0 THEN 'SI' ELSE 'NO' END AS Revisado FROM `gd_revision` WHERE `archivoid`='{$args["archivoid"]}' AND revisado=0";
     try {
         $query = $db->query($sql);
     } catch(PDOException $e) {
@@ -2039,8 +2039,12 @@ $app->get("/aprobar/{archivoid}/{aprobado}", function($request, $response, $args
     }
     while( $fila = $query->fetch(PDO::FETCH_ASSOC) ) {
             // $fila['aprobado']=($model["aprobado"]=="1");
-        $data[] = $fila;
-        if((int)$fila[0]==0){
+        //$data[] = $fila;
+        // return $response
+        // ->withHeader('Content-type', 'application/json')
+        // ->withJson(array('error' => $fila[0]))
+        // ; 
+        if($fila['Revisado']=='NO'){
             return $response
             ->withHeader('Content-type', 'application/json')
             ->withJson(array('error' => "Para poder aprobarlo debe ser revisado previamente. Aún falta aprobar la revisión."))
